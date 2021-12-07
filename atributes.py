@@ -23,22 +23,36 @@ params_url1 = {
 # get the data from our prediction api
 prediction_data = requests.get(URL1, params=params_url1)
 data = prediction_data.json()
-data
+# data
 
 # futdb URL =====================================================
 URL2 = "https://futdb.app/api/players/search"
 
-params_url2={'name' : player}
-data = json.dumps(params_url2)
-resp = requests.post(URL2, headers=headers, data=data).json()
-player = resp['items'][0]
-player
-# player['name']
-# player['age']
-# player['height']
-# player['weight']
-# data.get('prediction')
+params_url2 = {'name' : player}
+api_call = json.dumps(params_url2)
+resp = requests.post(URL2, headers=headers, data=api_call).json()
+searched_player = resp['items'][0]
+# searched_player['name']
+# searched_player['age']
+# searched_player['height']
+# searched_player['weight']
+# data['prediction']
+list_of_stats = ['name', 'age', 'height', 'weight']
+stats_dictionary = {}
+for stat in list_of_stats:
+    stats_dictionary[stat] = searched_player[stat]
+stats_dictionary['predicted_value'] = data['prediction']
+stats_dictionary
 
+
+@st.cache
+def get_player_stats():
+    return pd.DataFrame.from_dict(stats_dictionary, orient='index')
+
+stats_df = get_player_stats()
+h_stats_df = stats_df.assign(hack='').set_index('hack')
+
+st.table(h_stats_df)
 
 
 @st.cache
