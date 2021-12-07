@@ -8,6 +8,11 @@ ronaldo = [91, 91, 88, 94, 83, 90, 35, 78]
 # get the player attributes from the predict.py
 fetched_player = [91, 91, 88, 94, 83, 90, 35, 78]
 
+url = https://market-value-api-om3gdzslta-ew.a.run.app/predict
+
+params = {
+    'player_name' : player,
+}
 
 @st.cache
 def get_dataframe_data():
