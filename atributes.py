@@ -47,6 +47,7 @@ def get_player_stats():
 
 stats_df = get_player_stats()
 st.table(stats_df)
+# micheal deleted my file schiesse
 
 
 @st.cache
