@@ -12,8 +12,8 @@ import plotly.express as px
 load_dotenv()
 headers = CaseInsensitiveDict()
 headers["accept"] = "application/json"
-#headers["X-AUTH-TOKEN"] = os.getenv("AUTH-TOKEN")
-headers["X-AUTH-TOKEN"] = "6ee5d299-299c-480c-ba52-514607532d6a"
+headers["X-AUTH-TOKEN"] = os.getenv("AUTH-TOKEN")
+#headers["X-AUTH-TOKEN"] = "6ee5d299-299c-480c-ba52-514607532d6a"
 headers["Content-Type"] = "application/json"
 
 st.sidebar.markdown(f"""
