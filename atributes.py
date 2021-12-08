@@ -4,10 +4,15 @@ import pandas as pd
 import requests
 from requests.structures import CaseInsensitiveDict
 import json
+from dotenv import load_dotenv
+import os
+from bs4 import BeautifulSoup
+import plotly.express as px
 
+load_dotenv()
 headers = CaseInsensitiveDict()
 headers["accept"] = "application/json"
-headers["X-AUTH-TOKEN"] = "6ee5d299-299c-480c-ba52-514607532d6a"
+headers["X-AUTH-TOKEN"] = os.getenv("AUTH-TOKEN")
 headers["Content-Type"] = "application/json"
 
 
@@ -23,9 +28,17 @@ params_url1 = {
 # get the data from our prediction api
 prediction_data = requests.get(URL1, params=params_url1)
 data = prediction_data.json()
-# data
 
-# futdb name search URL =====================================================
+
+"""
+# Player estimated Value 🎉
+"""
+
+st.metric("Predicted Value in GBP", data['prediction'])
+
+
+
+# futdb name search URL =========================================
 URL2 = "https://futdb.app/api/players/search"
 
 params_url2 = {'name' : player}
@@ -38,26 +51,20 @@ list_of_stats = ['name', 'age', 'height', 'weight']
 stats_dictionary = {}
 for stat in list_of_stats:
     stats_dictionary[stat] = str(searched_player[stat])
-stats_dictionary['predicted_value_millions'] = data['prediction']
 
-# futdb image search URL ===================================================
+# futdb image search URL =========================================
 URL3 = f"https://futdb.app/api/players/{searched_player['id']}/image"
-player_photo = requests.get(URL3, headers=headers)
+player_photo = requests.get(URL3)
 player_photo.url #this line will provide a link to the photo
 
+# image is broken
+# st.image(player_photo.url, width=400)
 
-a = f"""Some text
-
-![Cool Image]({player_photo.url})
-
-Some more text"""
-
-st.markdown(a)
-
-
-st.image(str(player_photo.url), width=400)
-st.image('https://cdn-images-1.medium.com/max/1024/1*u9U3YjxT9c9A1FIaDMonHw.png')
-
+# scraping does not seem to work
+# response = requests.get(URL3)
+# soup = BeautifulSoup(response.content, 'html.parser')
+# picture = soup.find('img')
+# picture
 
 @st.cache
 def get_player_stats():
@@ -65,15 +72,32 @@ def get_player_stats():
 
 stats_df = get_player_stats()
 st.table(stats_df)
-# micheal deleted my file schiesse
 
 
 @st.cache
 def get_dataframe_data():
     return pd.DataFrame.from_dict(data['features'])
 
+# RADAR CHART =======================================================
+def generate_radar_chart():
+    r=[]
+    theta = []
+    for key, value in data['features'].items():
+        r.append(value[0])
+        theta.append(key)
+
+    df = pd.DataFrame(dict(r=r, theta=theta))
+    fig = px.line_polar(df, r='r', theta='theta', line_close=True)
+    return fig
+
+
+'''
+# Player Atributes
+'''
+
 df = get_dataframe_data()
 hdf = df.assign(hack='').set_index('hack')
-
-st.write(f"{player}'s attributes")
 st.table(hdf)
+
+radar = generate_radar_chart()
+st.write(radar)
