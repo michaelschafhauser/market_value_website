@@ -12,12 +12,30 @@ import plotly.express as px
 load_dotenv()
 headers = CaseInsensitiveDict()
 headers["accept"] = "application/json"
-headers["X-AUTH-TOKEN"] = os.getenv("AUTH-TOKEN")
+#headers["X-AUTH-TOKEN"] = os.getenv("AUTH-TOKEN")
+headers["X-AUTH-TOKEN"] = "6ee5d299-299c-480c-ba52-514607532d6a"
 headers["Content-Type"] = "application/json"
 
+st.sidebar.markdown(f"""
+    # Football MVP
+    """)
+
+FONT_SIZE_CSS = f"""
+<style>
+h1 {{
+    font-size: 64px !important;
+}}
+</style>
+"""
+
+players = pd.read_csv("players.csv")
+players = players.drop_duplicates()
+
+#st.selectbox("Search for a player... ", players)
+player = st.selectbox("Search for a player... ", players)
 
 # get the player name from the user's input
-player = st.text_input(label='input player name')
+#player = st.text_input(label='input player name')
 
 # prediction URL ================================================
 URL1 = 'https://market-value-api-om3gdzslta-ew.a.run.app/predict'
@@ -28,6 +46,7 @@ params_url1 = {
 # get the data from our prediction api
 prediction_data = requests.get(URL1, params=params_url1)
 data = prediction_data.json()
+#data
 
 
 """
@@ -44,6 +63,7 @@ URL2 = "https://futdb.app/api/players/search"
 params_url2 = {'name' : player}
 api_call = json.dumps(params_url2)
 resp = requests.post(URL2, headers=headers, data=api_call).json()
+#resp
 searched_player = resp['items'][0]
 #searched_player
 
