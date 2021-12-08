@@ -1,2 +1,9 @@
 streamlit
 python-dotenv
+pandas
+requests
+requests.structures
+json
+dotenv
+os
+plotly.express
