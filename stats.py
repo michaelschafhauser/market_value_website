@@ -1,73 +1,87 @@
 import streamlit as st
 import numpy as np
 import pandas as pd
+import requests
+from requests.structures import CaseInsensitiveDict
+import json
 
-random_atributes=[45,45,22,78,12,53]
+headers = CaseInsensitiveDict()
+headers["accept"] = "application/json"
+headers["X-AUTH-TOKEN"] = "6ee5d299-299c-480c-ba52-514607532d6a"
+headers["Content-Type"] = "application/json"
+
+
+# get the player name from the user's input
+player = st.text_input(label='input player name')
+
+# prediction URL ================================================
+URL1 = 'https://market-value-api-om3gdzslta-ew.a.run.app/predict'
+params_url1 = {
+    'player_name': player,
+}
+
+# get the data from our prediction api
+prediction_data = requests.get(URL1, params=params_url1)
+data = prediction_data.json()
+#data
+
+# futdb URL =====================================================
+URL2 = "https://futdb.app/api/players/search"
+
+params_url2 = {'name': player}
+data2 = json.dumps(params_url2)
+resp = requests.post(URL2, headers=headers, data=data2).json()
+
+player = resp['items'][0]
+#player
+player['name']
+player['age']
+player['height']
+player['weight']
+league_ref=player["league"]
+nation_ref=player["nation"]
+club_ref=player["club"]
+data["prediction"]
+
+player_geo_information={}
+
+# Nations =====================================================
+from dict_country_club import country_dict
+for i in range(len(country_dict)):
+    if nation_ref == country_dict[i]["id"]:
+        player_geo_information["Nationality"]=(country_dict[i]["name"])
+
+# Leagues =====================================================
+URL3 = "https://futdb.app/api/leagues/"
+params_url3 = {'id': league_ref}
+league_resp = requests.get(URL3, headers=headers, params=params_url3).json()
+league_name=league_resp['items']
+for i in range(len(league_name)):
+    if league_ref==league_name[i]["id"]:
+        player_geo_information["League"] = (league_name[i]["name"])
+
+# Clubs =====================================================
+from dict_country_club import club_dict
+for i in range(len(club_dict)):
+    if league_ref == club_dict[i]["league"] and club_ref == club_dict[i]["id"]:
+        player_geo_information["Club"] = (club_dict[i]["name"])
+
+df=pd.DataFrame.from_dict(player_geo_information,orient="index")
+df
+
+# Club Images ================================================
+#URL6 = "https://futdb.app/api/clubs/{club_ref}}/image"
+#club_image_resp = requests.get(URL6, headers=headers).json()
+#club_image_resp
+
 
 @st.cache
-def get_data():
-    columns=["age","date of birth","nationality","weight","heigh","team"]
+def get_dataframe_data():
+    return pd.DataFrame.from_dict(data['features'])
 
-    return pd.DataFrame([random_atributes],columns=columns)
 
-df=get_data()
-hdf=df.assign(hack="").set_index("hack")
+df = get_dataframe_data()
+hdf = df.assign(hack='').set_index('hack')
 
-st.write("atributes")
+st.write("Player's attributes")
 st.table(hdf)
-
-
-
-st.markdown("""
-# This is a header
-## This is a sub header
-### This is text
-""")
-df = pd.DataFrame({
-    'first column': list(range(1, 11)),
-    'second column': np.arange(10, 101, 10)
-})
-
-mean = df["second column"].mean()
-n_rows = len(df)
-md_results = f"The mean is **{mean:.2f}** and there are **{n_rows:,}**."
-st.markdown(md_results)
-
-"""
-#using footbaler's face picture
-img = "Image".open("streamlit.png")
-st.image(img, height=200, width=200)
-
-# and used in order to select the displayed lines
-head_df = df.head(line_count)
-head_df
-"""
-
-# TAKE WEIGHT INPUT in kgs
-weight = st.number_input("Enter your weight (in kgs)")
-
-status="cms"
-# compare status value
-if (status == 'cms'):
-    # take height input in centimeters
-    height = st.number_input('Centimeters')
-
-    try:
-        bmi = weight / ((height / 100)**2)
-    except:
-        st.text("Enter some value of height")
-
-# print the BMI INDEX
-st.text("Your BMI Index is {}.".format(bmi))
-
-# give the interpretation of BMI index
-if (bmi < 16):
-    st.error("You are Extremely Underweight")
-elif (bmi >= 16 and bmi < 18.5):
-    st.warning("You are Underweight")
-elif (bmi >= 18.5 and bmi < 25):
-    st.success("Healthy")
-elif (bmi >= 25 and bmi < 30):
-    st.warning("Overweight")
-elif (bmi >= 30):
-    st.error("Extremely Overweight")
