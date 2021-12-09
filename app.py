@@ -90,13 +90,10 @@ if data['prediction'][:3] == 'EUR' :
             stats_dictionary["Club"] = (club_dict[i]["name"])
 
 
-    #data["transfer_history"]["receiving_club"]
-
-
-    # if data["transfer_history"]["receiving_club"] == {}:
-    #     stats_dictionary["Nº Clubs"] = 1
-    # else:
-    #     stats_dictionary["Nº Clubs"] = str(len(set(data["transfer_history"]["receiving_club"])))
+    if len(data["transfer_history"]) == 1:
+        stats_dictionary["Nº Clubs"] = str(1)
+    else:
+        stats_dictionary["Nº Clubs"] = str(len(set(data["transfer_history"]["receiving_club"])))
 
 
     @st.cache
@@ -111,6 +108,7 @@ if data['prediction'][:3] == 'EUR' :
         "height": "Height (cm)",
         "weight": "Weight (kg)"
     })
+
     stats_columns[1].table(stats_df)
     # ====================================================================
 
