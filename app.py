@@ -7,9 +7,9 @@ import requests
 from dotenv import load_dotenv
 from requests.structures import CaseInsensitiveDict
 import os
+from dict_country_club import country_dict, club_dict
 
 # HEADERS ==================================
-
 load_dotenv()
 headers = CaseInsensitiveDict()
 headers["accept"] = "application/json"
@@ -31,24 +31,21 @@ h1 {{
 }}
 </style>
 """
-
 players = pd.read_csv("players.csv")
 players = players.drop_duplicates()
-
 player = st.selectbox("Search for a player... ", players)
 
 
 # prediction URL =================================
 data = get_player_data(player)
+# futdb name search URL ==========================
+searched_player = get_futdb_data(player)
 
 """
 # 🎉 Player estimated Value 🎉
 """
 st.metric("Predicted value", data['prediction'])
 
-# futdb name search URL =========================================
-searched_player = get_futdb_data(player)
-#searched_player
 
 # Player Stats DF
 list_of_stats = ['name', 'age', 'height', 'weight']
@@ -61,18 +58,16 @@ URL3 = f"https://futdb.app/api/players/{searched_player['id']}/image"
 player_photo = requests.get(URL3)
 player_photo.url  #this line will provide a link to the photo
 
-
 st.metric("Player name", searched_player['name'])
+
 league_ref = searched_player["league"]
 nation_ref = searched_player["nation"]
 club_ref = searched_player["club"]
 
 
-
 # NATIONS, LEAGUES, CLUBS ====================================
 player_geo_information = {}
 
-from dict_country_club import country_dict
 for i in range(len(country_dict)):
     if nation_ref == country_dict[i]["id"]:
         player_geo_information["Nationality"] = (country_dict[i]["name"])
@@ -84,7 +79,7 @@ for i in range(len(league_name)):
     if league_ref == league_name[i]["id"]:
         player_geo_information["League"] = (league_name[i]["name"])
 
-from dict_country_club import club_dict
+
 for i in range(len(club_dict)):
     if league_ref == club_dict[i]["league"] and club_ref == club_dict[i]["id"]:
         player_geo_information["Club"] = (club_dict[i]["name"])
