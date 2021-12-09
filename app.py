@@ -59,7 +59,7 @@ if data['prediction'][:3] == 'EUR' :
     pic_path = get_player_image(get_player_id(player))
     image = Image.open(pic_path)
     stats_columns[0].image(image, use_column_width=False)
-    stats_columns[0].write(f"Overall rating {data['features']['overall'][0]} ⭐")
+    stats_columns[0].subheader(f"⭐ Rating: {data['features']['overall'][0]} ⭐")
     # st.metric("Player name", searched_player['name'])
 
 
@@ -196,6 +196,10 @@ if data['prediction'][:3] == 'EUR' :
             df_all.Age.iloc[-1]+age_counter,
             "-"
         ]
+
+        '''
+        # Transfer history
+        '''
 
         df_all
 
