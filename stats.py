@@ -1,73 +1,152 @@
 import streamlit as st
 import numpy as np
 import pandas as pd
+import requests
+from requests.structures import CaseInsensitiveDict
+import json
+#from dotenv import load_dotenv
+import os
+from bs4 import BeautifulSoup
+import plotly.express as px
 
-random_atributes=[45,45,22,78,12,53]
+#load_dotenv()
+headers = CaseInsensitiveDict()
+headers["accept"] = "application/json"
+#headers["X-AUTH-TOKEN"] = os.getenv("AUTH-TOKEN")
+headers["X-AUTH-TOKEN"]="6ee5d299-299c-480c-ba52-514607532d6a"
+headers["Content-Type"] = "application/json"
+
+# get the player name from the user's input
+player = st.text_input(label='Insert Player Name')
+
+# prediction URL ================================================
+URL1 = 'https://market-value-api-om3gdzslta-ew.a.run.app/predict'
+params_url1 = {
+    'player_name': player,
+}
+
+# get the data from our prediction api
+prediction_data = requests.get(URL1, params=params_url1)
+data = prediction_data.json()
+"""
+# 🎉 Player estimated Value 🎉
+"""
+
+st.metric("Predicted value in millions of euros", data['prediction'])
+
+# futdb name search URL =========================================
+URL2 = "https://futdb.app/api/players/search"
+
+params_url2 = {'name': player}
+api_call = json.dumps(params_url2)
+resp = requests.post(URL2, headers=headers, data=api_call).json()
+searched_player = resp['items'][0]
+#searched_player
+
+list_of_stats = ['name', 'age', 'height', 'weight']
+stats_dictionary = {}
+for stat in list_of_stats:
+    stats_dictionary[stat] = str(searched_player[stat])
+
+# futdb image search URL =========================================
+URL3 = f"https://futdb.app/api/players/{searched_player['id']}/image"
+player_photo = requests.get(URL3)
+player_photo.url  #this line will provide a link to the photo
+
+player = resp['items'][0]
+#player
+
+#{player['name']}
+st.metric("Player name",player['name'])
+#player['age']
+#player['height']
+#player['weight']
+league_ref=player["league"]
+nation_ref=player["nation"]
+club_ref=player["club"]
+#data["prediction"]
+
+player_geo_information={}
+
+# Nations =====================================================
+from dict_country_club import country_dict
+for i in range(len(country_dict)):
+    if nation_ref == country_dict[i]["id"]:
+        player_geo_information["Nationality"] = (country_dict[i]["name"])
+
+# Leagues =====================================================
+URL4 = "https://futdb.app/api/leagues/"
+params_url4 = {'id': league_ref}
+league_resp = requests.get(URL4, headers=headers, params=params_url4).json()
+league_name=league_resp['items']
+for i in range(len(league_name)):
+    if league_ref==league_name[i]["id"]:
+        player_geo_information["League"] = (league_name[i]["name"])
+
+# Clubs =====================================================
+from dict_country_club import club_dict
+for i in range(len(club_dict)):
+    if league_ref == club_dict[i]["league"] and club_ref == club_dict[i]["id"]:
+        player_geo_information["Club"] = (club_dict[i]["name"])
+
+
+df_geographic_loc = pd.DataFrame.from_dict(player_geo_information,
+                                           orient="index",
+                                           columns=['Player Stats'])
+
+
+
+# Club Images ================================================
+#URL6 = "https://futdb.app/api/clubs/{club_ref}}/image"
+#club_image_resp = requests.get(URL6, headers=headers).json()
+#club_image_resp
+
 
 @st.cache
-def get_data():
-    columns=["age","date of birth","nationality","weight","heigh","team"]
+def get_player_stats():
+    return pd.DataFrame.from_dict(stats_dictionary,
+                                  orient='index',
+                                  columns=['Player Stats'])
 
-    return pd.DataFrame([random_atributes],columns=columns)
 
-df=get_data()
-hdf=df.assign(hack="").set_index("hack")
+stats_df = get_player_stats()
+#st.table(stats_df)
 
-st.write("atributes")
+frames = [stats_df, df_geographic_loc]
+df_concat = pd.concat(frames, sort=False)
+df_concat=df_concat.drop(labels=['name'], axis=0)
+df_concat = df_concat.rename({
+    "age": "Age",
+    "height": "Height (cm)",
+    "weight": "Weight (kg)"
+})
+df_concat
+
+@st.cache
+def get_dataframe_data():
+    return pd.DataFrame.from_dict(data['features'])
+
+
+# RADAR CHART =======================================================
+def generate_radar_chart():
+    r = []
+    theta = []
+    for key, value in data['features'].items():
+        r.append(value[0])
+        theta.append(key)
+
+    df = pd.DataFrame(dict(r=r, theta=theta))
+    fig = px.line_polar(df, r='r', theta='theta', line_close=True)
+    return fig
+
+
+'''
+# Player Atributes
+'''
+
+df = get_dataframe_data()
+hdf = df.assign(hack='').set_index('hack')
 st.table(hdf)
 
-
-
-st.markdown("""
-# This is a header
-## This is a sub header
-### This is text
-""")
-df = pd.DataFrame({
-    'first column': list(range(1, 11)),
-    'second column': np.arange(10, 101, 10)
-})
-
-mean = df["second column"].mean()
-n_rows = len(df)
-md_results = f"The mean is **{mean:.2f}** and there are **{n_rows:,}**."
-st.markdown(md_results)
-
-"""
-#using footbaler's face picture
-img = "Image".open("streamlit.png")
-st.image(img, height=200, width=200)
-
-# and used in order to select the displayed lines
-head_df = df.head(line_count)
-head_df
-"""
-
-# TAKE WEIGHT INPUT in kgs
-weight = st.number_input("Enter your weight (in kgs)")
-
-status="cms"
-# compare status value
-if (status == 'cms'):
-    # take height input in centimeters
-    height = st.number_input('Centimeters')
-
-    try:
-        bmi = weight / ((height / 100)**2)
-    except:
-        st.text("Enter some value of height")
-
-# print the BMI INDEX
-st.text("Your BMI Index is {}.".format(bmi))
-
-# give the interpretation of BMI index
-if (bmi < 16):
-    st.error("You are Extremely Underweight")
-elif (bmi >= 16 and bmi < 18.5):
-    st.warning("You are Underweight")
-elif (bmi >= 18.5 and bmi < 25):
-    st.success("Healthy")
-elif (bmi >= 25 and bmi < 30):
-    st.warning("Overweight")
-elif (bmi >= 30):
-    st.error("Extremely Overweight")
+radar = generate_radar_chart()
+st.write(radar)
