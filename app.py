@@ -46,11 +46,12 @@ if data['prediction'][:3] == 'EUR' :
 
 
     """
-    # 🎉 Player estimated Value 🎉
+    # Player estimated value
     """
     # player predicted value =======================
     st.markdown(f"<h1 style='text-align: center;\
-                color: red;'>{data['prediction']} 💸</h1>",unsafe_allow_html=True)
+                '>💸 {data['prediction']} 💸</h1>"                                                                                                                                                                                                ,
+                unsafe_allow_html=True)
 
 
     stats_columns = st.columns(2)
@@ -58,7 +59,7 @@ if data['prediction'][:3] == 'EUR' :
     pic_path = get_player_image(get_player_id(player))
     image = Image.open(pic_path)
     stats_columns[0].image(image, use_column_width=False)
-    stats_columns[0].write(f"Overall Rating {data['features']['overall'][0]} ⭐")
+    stats_columns[0].write(f"Overall rating {data['features']['overall'][0]} ⭐")
     # st.metric("Player name", searched_player['name'])
 
 
@@ -98,7 +99,7 @@ if data['prediction'][:3] == 'EUR' :
 
     @st.cache
     def get_player_stats():
-        return pd.DataFrame.from_dict(stats_dictionary, orient='index', columns=['Player Stats'])
+        return pd.DataFrame.from_dict(stats_dictionary, orient='index', columns=['Player stats'])
 
 
     stats_df = get_player_stats()
@@ -106,7 +107,8 @@ if data['prediction'][:3] == 'EUR' :
     stats_df = stats_df.rename({
         "age": "Age",
         "height": "Height (cm)",
-        "weight": "Weight (kg)"
+        "weight": "Weight (kg)",
+        "name": "Name"
     })
 
     stats_columns[1].table(stats_df)
@@ -116,6 +118,14 @@ if data['prediction'][:3] == 'EUR' :
     def get_dataframe_data():
         df = pd.DataFrame.from_dict(data['features'])
         df.drop(columns=['overall'], inplace=True)
+        df = df.rename(columns={
+            "pace": "Pace",
+            "shooting": "Shooting",
+            "passing": "Passing",
+            "dribbling": "Dribbling",
+            "defending": "Defending",
+            "physic": "Physical"
+            })
         return df
 
 
@@ -128,12 +138,14 @@ if data['prediction'][:3] == 'EUR' :
                 r.append(value[0])
                 theta.append(key)
 
+        theta = ['Pace', 'Shooting', 'Passing', 'Dribbling','Defending', 'Physical']
+
         df = pd.DataFrame(dict(r=r, theta=theta))
         fig = px.line_polar(df, r='r', theta='theta', line_close=True)
         return fig
 
     '''
-    # Player Attributes
+    # Player attributes
     '''
     df = get_dataframe_data()
     hdf = df.assign(hack='').set_index('hack')
@@ -146,7 +158,7 @@ if data['prediction'][:3] == 'EUR' :
     if len(data['transfer_history']) != 1:
         transfer_fee_values=[]
         for i in range(len(data["transfer_history"]["transfer_fee"])):
-            transfer_fee_values.append(data["transfer_history"]["transfer_fee"][i])
+            transfer_fee_values.append(round(data["transfer_history"]["transfer_fee"][i],1))
 
         transfer_fee_years=[]
         for i in range(len(data["transfer_history"]["season"])):
@@ -154,7 +166,7 @@ if data['prediction'][:3] == 'EUR' :
 
         transfer_age=[]
         for i in range(len(data["transfer_history"]["age"])):
-            transfer_age.append(data["transfer_history"]["age"][i])
+            transfer_age.append(round(data["transfer_history"]["age"][i]))
 
         receiving_club = []
         for i in range(len(data["transfer_history"]["receiving_club"])):
