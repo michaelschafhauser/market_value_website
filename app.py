@@ -89,7 +89,14 @@ if data['prediction'][:3] == 'EUR' :
         if league_ref == club_dict[i]["league"] and club_ref == club_dict[i]["id"]:
             stats_dictionary["Club"] = (club_dict[i]["name"])
 
-    stats_dictionary["Nº Clubs"] = str(len(set(data["transfer_history"]["receiving_club"])))
+
+    #data["transfer_history"]["receiving_club"]
+
+
+    # if data["transfer_history"]["receiving_club"] == {}:
+    #     stats_dictionary["Nº Clubs"] = 1
+    # else:
+    #     stats_dictionary["Nº Clubs"] = str(len(set(data["transfer_history"]["receiving_club"])))
 
 
     @st.cache
@@ -138,58 +145,65 @@ if data['prediction'][:3] == 'EUR' :
     st.write(radar)
 
     # TRANSFER HISTORY =====================================================
-    transfer_fee_values=[]
-    for i in range(len(data["transfer_history"]["transfer_fee"])):
-        transfer_fee_values.append(data["transfer_history"]["transfer_fee"][i])
+    if len(data['transfer_history']) != 1:
+        transfer_fee_values=[]
+        for i in range(len(data["transfer_history"]["transfer_fee"])):
+            transfer_fee_values.append(data["transfer_history"]["transfer_fee"][i])
 
-    transfer_fee_years=[]
-    for i in range(len(data["transfer_history"]["season"])):
-        transfer_fee_years.append(data["transfer_history"]["season"][i])
+        transfer_fee_years=[]
+        for i in range(len(data["transfer_history"]["season"])):
+            transfer_fee_years.append(data["transfer_history"]["season"][i])
 
-    transfer_age=[]
-    for i in range(len(data["transfer_history"]["age"])):
-        transfer_age.append(data["transfer_history"]["age"][i])
+        transfer_age=[]
+        for i in range(len(data["transfer_history"]["age"])):
+            transfer_age.append(data["transfer_history"]["age"][i])
 
-    receiving_club = []
-    for i in range(len(data["transfer_history"]["receiving_club"])):
-        receiving_club.append(data["transfer_history"]["receiving_club"][i])
-
-
-    df_transfer_values = pd.DataFrame(transfer_fee_values)
-    df_transfer_values = df_transfer_values.rename(columns={0: 'Transfer_Values'})
-
-    df_transfer_years = pd.DataFrame(transfer_fee_years)
-    df_transfer_years = df_transfer_years.rename(columns={0: 'Transfer_Years'})
-    df_transfer_years["Transfer_Years"]=df_transfer_years["Transfer_Years"].apply(lambda x : int(x[:4]))
-
-    df_transfer_age = pd.DataFrame(transfer_age)
-    df_transfer_age = df_transfer_age.rename(columns={0: 'Age'})
-
-    df_receiving_club = pd.DataFrame(receiving_club)
-    df_receiving_club = df_receiving_club.rename(columns={0: 'Receiving Club'})
+        receiving_club = []
+        for i in range(len(data["transfer_history"]["receiving_club"])):
+            receiving_club.append(data["transfer_history"]["receiving_club"][i])
 
 
-    df_all = pd.concat([df_transfer_years, df_transfer_values,df_transfer_age, df_receiving_club], axis=1)
-    n_of_digits = sum(c.isdigit() for c in data["prediction"])-1
-    age_counter = 2021 - df_all.Transfer_Years.iloc[-1]
-    df_all.loc[len(df_all.index)] = [
-        2022,
-        int(data['prediction'][4:4 + n_of_digits]),
-        df_all.Age.iloc[-1]+age_counter,
-        "-"
-    ]
+        df_transfer_values = pd.DataFrame(transfer_fee_values)
+        df_transfer_values = df_transfer_values.rename(columns={0: 'Transfer_Values'})
 
-    df_all
+        df_transfer_years = pd.DataFrame(transfer_fee_years)
+        df_transfer_years = df_transfer_years.rename(columns={0: 'Transfer_Years'})
+        df_transfer_years["Transfer_Years"]=df_transfer_years["Transfer_Years"].apply(lambda x : int(x[:4]))
 
-    # ======================================================================
+        df_transfer_age = pd.DataFrame(transfer_age)
+        df_transfer_age = df_transfer_age.rename(columns={0: 'Age'})
 
-    fig = px.area(
-    df_all,
-    x='Transfer_Years',
-    y="Transfer_Values",
-    range_x=[df_all['Transfer_Years'].min()-1, df_all['Transfer_Years'].max()+1]
-    )
-    st.plotly_chart(fig)
+        df_receiving_club = pd.DataFrame(receiving_club)
+        df_receiving_club = df_receiving_club.rename(columns={0: 'Receiving Club'})
+
+
+        df_all = pd.concat([df_transfer_years, df_transfer_values,df_transfer_age, df_receiving_club], axis=1)
+        n_of_digits = sum(c.isdigit() for c in data["prediction"])-1
+        age_counter = 2021 - df_all.Transfer_Years.iloc[-1]
+        df_all.loc[len(df_all.index)] = [
+            2022,
+            int(data['prediction'][4:4 + n_of_digits]),
+            df_all.Age.iloc[-1]+age_counter,
+            "-"
+        ]
+
+        df_all
+
+        fig = px.area(
+        df_all,
+        x='Transfer_Years',
+        y="Transfer_Values",
+        range_x=[df_all['Transfer_Years'].min()-1, df_all['Transfer_Years'].max()+1]
+        )
+        st.plotly_chart(fig)
+
+    else:
+        '''
+        # No transfer information
+        '''
+
+
+
 
 
 
