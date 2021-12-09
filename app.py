@@ -21,17 +21,21 @@ headers["Content-Type"] = "application/json"
 URL4 = "https://futdb.app/api/leagues/"
 
 # sidebar =================================
-st.sidebar.markdown(f"""
-    # Football MVP
-    """)
 
-FONT_SIZE_CSS = f"""
+st.sidebar.markdown("""
 <style>
-h1 {{
-    font-size: 64px !important;
-}}
+.big-font {
+    font-size:48px !important;
+}
 </style>
-"""
+""",
+            unsafe_allow_html=True)
+
+st.sidebar.markdown('<p class="big-font"> ⚽ 🏆 <br> Football MVP</p>',
+                    unsafe_allow_html=True)
+
+
+
 players = pd.read_csv("players.csv")
 players = players.drop_duplicates()
 player = st.selectbox("Search for a player... ", players)
@@ -50,7 +54,7 @@ if data['prediction'][:3] == 'EUR' :
     """
     # player predicted value =======================
     st.markdown(f"<h1 style='text-align: center;\
-                '>💸 {data['prediction']} 💸</h1>"                                                                                                                                                                                                ,
+                '>💸 {data['prediction']} 💸</h1>"                                                                                                                                                                                                                                                                                                                                                                                                                                                ,
                 unsafe_allow_html=True)
 
 
