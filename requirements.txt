@@ -2,7 +2,5 @@ streamlit
 python-dotenv
 pandas
 requests
-json
 dotenv
-os
 plotly.express
