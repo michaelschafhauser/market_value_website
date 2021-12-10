@@ -34,6 +34,19 @@ st.sidebar.markdown("""
 st.sidebar.markdown('<p class="big-font"> ⚽ 🏆 <br> Football MVP</p>',
                     unsafe_allow_html=True)
 
+def get_top_100():
+    top100_players = pd.read_csv('top_players_prediction.csv')
+    top100_players = top100_players.drop(columns=['Unnamed: 0'])
+    top100_players['index'] = list(range(1, len(top100_players)+1))
+    top100_players = top100_players.set_index('index')
+    top100_players =  top100_players.rename(columns=
+        {'predicted_fee': 'Predicted Value'})
+    top100_players['Predicted Value'] = top100_players['Predicted Value'].map(lambda x: "EUR {:,.1f}m".format(x))
+    # prediction_eur = "EUR {:,.1f}m".format(prediction_eur[0]
+    return top100_players
+
+st.sidebar.table(get_top_100().head(20))
+
 
 
 players = pd.read_csv("players.csv")
@@ -54,7 +67,7 @@ if data['prediction'][:3] == 'EUR' :
     """
     # player predicted value =======================
     st.markdown(f"<h1 style='text-align: center;\
-                '>💸 {data['prediction']} 💸</h1>"                                                                                                                                                                                                                                                                                                                                                                                                                                                ,
+                '>💸 {data['prediction']} 💸</h1>"                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                ,
                 unsafe_allow_html=True)
 
 
